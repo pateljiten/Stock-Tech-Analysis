@@ -155,12 +155,14 @@ class TechAnalysis:
     
 # Extract data to Excel 
 def extract(tDate):
+    print("Extracting data from DB to excel")
     extDate = datetime.strptime(tDate,"%d%b%Y")
     gWb = Workbook()
     sht = gWb.active
-    query = "SELECT * FROM DAILY_TECH_ANALYSIS WHERE VOLUMEIND != 0 OR BULISHENGULF != 0 OR MORNINGSTAR != 0 OR HAMMER != 0 \
-        OR EMA5_ABOVE13 != 0 OR EMA13_ABOVE26 != 0 OR EMA5_CROSS13 !=0 OR EMA13_CROSS26 !=0 AND DATE = {0}".format(extDate.strftime("%Y-%m-%d"))
+    query = "SELECT * FROM DAILY_TECH_ANALYSIS WHERE (VOLUMEIND != 0 OR BULISHENGULF != 0 OR MORNINGSTAR != 0 OR HAMMER != 0 \
+        OR EMA5_ABOVE13 != 0 OR EMA13_ABOVE26 != 0 OR EMA5_CROSS13 !=0 OR EMA13_CROSS26 !=0) AND DATE = '{0}'".format(extDate.strftime("%Y-%m-%d"))
     curr = gConn.cursor()
+    print (query)
     result = curr.execute(query)
     colhdr = [i[0] for i in curr.description]
     sht.append(colhdr)
@@ -175,9 +177,9 @@ def analyze(tDate):
     curr1 = gConn.cursor()
     stklist = curr1.execute(query)       
     tstk = ""     
-    #for stk in stklist:        
-    #    tstk = TechAnalysis(stk[0],tDate)
-    #    tstk.analyze()
+    for stk in stklist:        
+        tstk = TechAnalysis(stk[0],tDate)
+        tstk.analyze()
     
 
 def main(argv):
@@ -207,7 +209,7 @@ def main(argv):
         print("TechnicalAnalysis.py -d <date - DDMONYYYY> -n <no of days>")
         print("TechnicalAnalysis.py -a <date - DDMONYYYY> ")
     if (doAnalysis):
-        analyze(tDate)
+        #analyze(tDate)
         extract(tDate)          
     else:
         handle = UploadStockData.UploadStockData (tDate,tNoDays)
