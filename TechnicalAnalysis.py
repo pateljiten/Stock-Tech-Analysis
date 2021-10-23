@@ -47,7 +47,7 @@ class TechAnalysis:
             tdayCandleGreen = True
         if (yday['open'] > yday['close']):
             ydayCandleRed = True
-        if (today['open'] > yday['open'] and today['close'] < yday['close']) and tdayCandleGreen and ydayCandleRed:
+        if (today['open'] < yday['close'] and today['close'] > yday['open']) and tdayCandleGreen and ydayCandleRed:
             self.bulishEngulf = True
         else:
             self.bulishEngulf = False
@@ -122,8 +122,11 @@ class TechAnalysis:
         #print("{0}x+{1}".format(*z))        
     
     def dumpAnalysis(self):    
+        #to_db = [self.stockData[-1]['symbole'].strip(),self.stockData[-1]['open'],self.stockData[-1]['high'],self.stockData[-1]['low'],\
+        #    self.stockData[-1]['close'],int(self.stockData[-1]['volume']),self.stockData[-1]['date'].tolist()]
         to_db = self.stockData[-1].tolist()
         to_db = list(to_db)
+        to_db[0] = self.stockCode
         to_db[6] = to_db[6].strftime("%Y-%m-%d")
         to_db = to_db + [self.volIndicator,self.bulishEngulf,self.morningStar,self.hammer,\
                 round(self.ema_5,2),round(self.ema_13,2),round(self.ema_26,2),round(self.avg5_above13,2),\
@@ -135,10 +138,11 @@ class TechAnalysis:
         print(to_db)  
 
     def cleanup(self):        
-        query = "DELETE FROM DAILY_TECH_ANALYSIS WHERE SYMBOLE = '{0}' AND DATE <= '{1}'".\
-            format(self.stockCode,self.dateToAnalyze.strftime("%Y-%m-%d"))    
+        query = "DELETE FROM DAILY_TECH_ANALYSIS WHERE SYMBOLE = '{0}' AND DATE = '{1}'".\
+            format(self.stockCode,self.dateToAnalyze.strftime("%Y-%m-%d"))            
         curr = gConn.cursor()
         curr.execute(query)
+        print(query)
         gConn.commit()
 
 
@@ -209,7 +213,7 @@ def main(argv):
         print("TechnicalAnalysis.py -d <date - DDMONYYYY> -n <no of days>")
         print("TechnicalAnalysis.py -a <date - DDMONYYYY> ")
     if (doAnalysis):
-        #analyze(tDate)
+        analyze(tDate)
         extract(tDate)          
     else:
         handle = UploadStockData.UploadStockData (tDate,tNoDays)
